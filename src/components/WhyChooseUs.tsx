@@ -13,7 +13,7 @@ import {
 import { motion, useInView } from "framer-motion";
 
 const stats = [
-  { target: 50, suffix: "+", label: "Projects Delivered" },
+  { target: 10, suffix: "+", label: "Projects Delivered" },
   { target: 100, suffix: "%", label: "Client Satisfaction" },
   { target: 24, suffix: "/7", label: "Dedicated Support" }
 ];
