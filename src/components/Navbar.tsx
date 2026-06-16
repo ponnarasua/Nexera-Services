@@ -28,6 +28,12 @@ export default function Navbar() {
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+      
+      // Detect if page is scrolled to the bottom to force active section to contact
+      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80;
+      if (isAtBottom) {
+        setActiveSection("contact");
+      }
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
@@ -42,7 +48,7 @@ export default function Navbar() {
           }
         });
       },
-      { threshold: 0.2, rootMargin: "-20% 0px -60% 0px" }
+      { threshold: 0.1, rootMargin: "-20% 0px -30% 0px" }
     );
 
     const sections = ["home", "about", "services", "solutions", "portfolio", "process", "contact"];
@@ -93,6 +99,7 @@ export default function Navbar() {
                 <a
                   key={item.label}
                   href={item.href}
+                  onClick={() => setActiveSection(item.href.replace("#", ""))}
                   onMouseEnter={() => setHoveredIdx(idx)}
                   onMouseLeave={() => setHoveredIdx(null)}
                   className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-full ${
@@ -197,7 +204,10 @@ export default function Navbar() {
                 <a
                   key={item.label}
                   href={item.href}
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    setActiveSection(item.href.replace("#", ""));
+                  }}
                   className="py-2 border-b border-card-border text-foreground/80 hover:text-foreground flex items-center justify-between"
                 >
                   {item.label}
