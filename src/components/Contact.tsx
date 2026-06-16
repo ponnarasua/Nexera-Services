@@ -169,7 +169,7 @@ export default function Contact() {
     phone: "",
     organization: "",
     service: "custom-software",
-    budget: 15000,
+    budget: "",
     message: ""
   });
 
@@ -215,7 +215,7 @@ export default function Contact() {
         phone: "",
         organization: "",
         service: "custom-software",
-        budget: 15000,
+        budget: "",
         message: ""
       });
     } catch {
@@ -223,28 +223,6 @@ export default function Contact() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const getBudgetText = (val: number) => {
-    if (val <= 3000) return "Below $3,000";
-    if (val >= 45000) return "$45,000+ (Enterprise Custom)";
-    return `$${val.toLocaleString()} - $${(val + 5000).toLocaleString()}`;
-  };
-
-  const getTimelineText = (val: number) => {
-    if (val <= 5000) return "2 - 3 Weeks (MVP Fast-Track)";
-    if (val <= 15000) return "4 - 6 Weeks (Standard Sprint)";
-    if (val <= 30000) return "8 - 12 Weeks (Scale Phase)";
-    if (val <= 45000) return "12 - 16 Weeks (Enterprise Integration)";
-    return "16+ Weeks (Dedicated Support SLA)";
-  };
-
-  const getScopeText = (val: number) => {
-    if (val <= 5000) return "High-fidelity clickable prototype, core Database schema, and custom landing layout.";
-    if (val <= 15000) return "Fully modular dashboard panel, user authorization roles, standard payments sync, and secure APIs.";
-    if (val <= 30000) return "Custom CRM/ERP hooks, hardware tracking sync, and a scalable AWS/GCP DevOps cluster.";
-    if (val <= 45000) return "Deep messaging queues, serverless microservices architecture, and complete penetration-tested audit reports.";
-    return "Full dedicated engineering squad allocation, 24/7 SLA standby support, and custom AI model training.";
   };
 
   return (
@@ -412,32 +390,17 @@ export default function Contact() {
                     </AnimatePresence>
                   </div>
 
-                  {/* Gamified Estimator Card */}
-                  <div className="space-y-4 p-5 rounded-2xl border border-card-border bg-foreground/2 dark:bg-white/2">
-                    <div className="flex justify-between items-center text-xs font-extrabold uppercase">
-                      <span className="text-text-muted">Est. Budget Range</span>
-                      <span className="text-accent-primary dark:text-accent-secondary font-mono text-sm">{getBudgetText(form.budget)}</span>
-                    </div>
-                    <input 
-                      type="range" 
-                      min="2000" 
-                      max="50000" 
-                      step="2000"
+                  {/* Estimated Budget */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-extrabold uppercase text-text-muted">Estimated Budget</label>
+                    <textarea 
+                      required
+                      rows={2}
                       value={form.budget}
-                      onChange={(e) => setForm({ ...form, budget: parseInt(e.target.value) })}
-                      className="w-full accent-accent-primary dark:accent-accent-secondary h-1.5 bg-card-border rounded-lg cursor-pointer"
+                      onChange={(e) => setForm({ ...form, budget: e.target.value })}
+                      placeholder="e.g., $10,000 - $15,000, or flexible details..."
+                      className="w-full px-4 py-3 rounded-xl border border-card-border bg-foreground/3 dark:bg-white/3 text-xs sm:text-sm font-semibold text-foreground focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
                     />
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-card-border/50 pt-4 text-xs">
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">Estimated Timeline</span>
-                        <span className="font-extrabold text-foreground">{getTimelineText(form.budget)}</span>
-                      </div>
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-text-muted font-bold uppercase tracking-wider block">Project Scope</span>
-                        <span className="font-semibold text-text-muted text-[11px] leading-relaxed block">{getScopeText(form.budget)}</span>
-                      </div>
-                    </div>
                   </div>
 
                   {/* Message */}

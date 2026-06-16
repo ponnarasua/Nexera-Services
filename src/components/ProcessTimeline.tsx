@@ -135,9 +135,6 @@ export default function ProcessTimeline() {
           
           {/* Left Column: Vertical Timeline Steps (Desktop & Mobile) */}
           <div className="lg:col-span-6 relative">
-            {/* Timeline Connecting Line */}
-            <div className="absolute left-6 top-4 bottom-4 w-0.5 bg-card-border z-0" />
-
             <div className="space-y-6">
               {steps.map((step, idx) => {
                 const Icon = step.icon;
@@ -145,6 +142,14 @@ export default function ProcessTimeline() {
 
                 return (
                   <div key={step.step} className="relative z-10">
+                    {/* Timeline Connecting Line Segment */}
+                    {idx < steps.length - 1 && (
+                      <div 
+                        className="absolute left-6 transform -translate-x-1/2 w-0.5 bg-card-border z-0" 
+                        style={{ top: "44px", bottom: "-52px" }}
+                      />
+                    )}
+
                     {/* Interactive Dot */}
                     <div 
                       onClick={() => setActiveIdx(idx)}

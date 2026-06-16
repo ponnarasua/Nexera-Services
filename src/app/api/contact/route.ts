@@ -68,24 +68,10 @@ const serviceLabels: Record<string, string> = {
   "managed-it": "Maintenance & Managed IT Services",
 };
 
-function getBudgetText(val: number): string {
-  if (val <= 3000) return "Below $3,000";
-  if (val >= 45000) return "$45,000+ (Enterprise Custom)";
-  return `$${val.toLocaleString()} – $${(val + 5000).toLocaleString()}`;
-}
-
-function getTimelineText(val: number): string {
-  if (val <= 5000) return "2 – 3 Weeks (MVP Fast-Track)";
-  if (val <= 15000) return "4 – 6 Weeks (Standard Sprint)";
-  if (val <= 30000) return "8 – 12 Weeks (Scale Phase)";
-  if (val <= 45000) return "12 – 16 Weeks (Enterprise Integration)";
-  return "16+ Weeks (Dedicated Support SLA)";
-}
-
 // ── Email 1: Owner Notification ──────────────────────────────────────────────
 function buildOwnerEmail(data: {
   name: string; email: string; phone: string;
-  organization: string; service: string; budget: number;
+  organization: string; service: string; budget: string;
   message: string; submittedAt: string;
 }): string {
   return `
@@ -128,16 +114,10 @@ function buildOwnerEmail(data: {
             <td width="50%" style="padding:0 0 12px 8px;vertical-align:top;">
               <div style="background:rgba(6,182,212,0.1);border:1px solid rgba(6,182,212,0.2);border-radius:12px;padding:14px;">
                 <span style="color:#22d3ee;font-size:11px;font-weight:700;text-transform:uppercase;">Budget</span>
-                <div style="color:#e2e8f0;font-size:14px;font-weight:700;margin-top:5px;">${getBudgetText(data.budget)}</div>
+                <div style="color:#e2e8f0;font-size:14px;font-weight:700;margin-top:5px;">${data.budget}</div>
               </div>
             </td>
           </tr>
-          <tr><td colspan="2">
-            <div style="background:rgba(139,92,246,0.1);border:1px solid rgba(139,92,246,0.2);border-radius:12px;padding:14px;">
-              <span style="color:#c084fc;font-size:11px;font-weight:700;text-transform:uppercase;">⏱ Timeline</span>
-              <div style="color:#e2e8f0;font-size:14px;font-weight:700;margin-top:5px;">${getTimelineText(data.budget)}</div>
-            </div>
-          </td></tr>
         </table>
 
         <h2 style="margin:0 0 10px;color:#e2e8f0;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">💬 Message</h2>
@@ -268,6 +248,9 @@ export async function POST(req: NextRequest) {
     if (organization && organization.length > 100) {
       return NextResponse.json({ error: "Organization name is too long." }, { status: 400 });
     }
+    if (budget && budget.length > 300) {
+      return NextResponse.json({ error: "Budget parameter is too long (max 300 characters)." }, { status: 400 });
+    }
     if (message.length > 3000) {
       return NextResponse.json({ error: "Message is too long (max 3000 characters)." }, { status: 400 });
     }
@@ -277,6 +260,7 @@ export async function POST(req: NextRequest) {
     const escapedEmail = escapeHtml(email);
     const escapedPhone = escapeHtml(phone || "");
     const escapedOrg = escapeHtml(organization || "");
+    const escapedBudget = escapeHtml(budget || "");
     const escapedMessage = escapeHtml(message);
 
     const submittedAt = new Date().toLocaleString("en-IN", {
@@ -297,7 +281,7 @@ export async function POST(req: NextRequest) {
         phone: escapedPhone,
         organization: escapedOrg,
         service,
-        budget,
+        budget: escapedBudget,
         message: escapedMessage,
         submittedAt
       }),
