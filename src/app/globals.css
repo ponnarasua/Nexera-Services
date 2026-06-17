@@ -179,12 +179,4 @@ body {
   scrollbar-width: none;  /* Firefox */
 }
 
-/* Custom Cursor Hide for desktop pointer devices */
-@media (hover: hover) and (pointer: fine) {
-  html, body {
-    cursor: none;
-  }
-  a, button, input, select, textarea, [role="button"] {
-    cursor: none !important;
-  }
-}
+
