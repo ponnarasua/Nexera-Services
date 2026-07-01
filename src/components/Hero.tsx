@@ -1,183 +1,170 @@
 "use client";
 
 import React from "react";
-import { ArrowRight, Play, Shield, Cpu, Activity } from "lucide-react";
 import { motion } from "framer-motion";
-
-const metrics = [
-  { value: "100%", label: "Custom Solutions" },
-  { value: "Modern", label: "Tech Stack" },
-  { value: "Future", label: "Ready Systems" },
-  { value: "Enterprise", label: "Security" },
-];
+import { Star, ArrowRight, Sparkles } from "lucide-react";
 
 export default function Hero() {
-  return (
-    <section
-      id="home"
-      className="relative min-h-screen w-full flex items-center justify-center pt-28 pb-16 overflow-hidden grid-bg"
-    >
-      {/* Moving Ambient Glow Elements */}
-      <div className="absolute top-1/4 left-1/10 w-96 h-96 rounded-full bg-accent-primary/10 blur-[120px] pointer-events-none animate-pulse-glow" />
-      <div className="absolute bottom-1/4 right-1/10 w-96 h-96 rounded-full bg-accent-secondary/10 blur-[120px] pointer-events-none" style={{ animationDelay: "2s" }} />
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
-      <div className="w-full px-6 md:px-12 lg:px-20 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10">
+  return (
+    <section className="relative min-h-screen pt-36 pb-16 flex items-center text-zinc-900 dark:text-white" id="hero">
+      
+      {/* Decorative ambient gold lighting blobs */}
+      <div className="absolute top-[5%] left-[-10%] w-[500px] h-[500px] bg-[#ffcd75]/10 dark:bg-[#ffcd75]/3 rounded-full blur-[130px] pointer-events-none" />
+      <div className="absolute top-[35%] right-[-10%] w-[600px] h-[600px] bg-[#ffcd75]/10 dark:bg-[#ffcd75]/3 rounded-full blur-[140px] pointer-events-none" />
+
+      <div className="max-w-7xl mx-auto px-6 w-full grid grid-cols-1 lg:grid-cols-12 gap-12 items-center relative z-10" id="hero-layout">
         
-        {/* Left: Text & CTAs */}
-        <div className="lg:col-span-7 flex flex-col justify-center text-center lg:text-left">
-          {/* Tagline Badge */}
-          <motion.div
+        {/* Hero Left Content */}
+        <div className="lg:col-span-7 space-y-6 text-left" id="hero-left">
+          
+          {/* Section Badges */}
+          <div className="mb-2">
+            <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100/80 dark:bg-white/5 px-3 py-1.5 backdrop-blur-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+              <Star size={11} className="fill-[#ffcd75] text-[#ffcd75]" />
+              we build digital experiences that convert
+            </span>
+          </div>
+
+          {/* Title Display */}
+          <motion.h1
             initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
-            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full glass-panel text-xs font-semibold text-accent-primary dark:text-accent-secondary mb-6 w-fit mx-auto lg:mx-0"
+            className="text-4xl sm:text-5xl lg:text-6xl font-medium tracking-tighter leading-[1.0] text-zinc-900 dark:text-white"
+            id="hero-title"
           >
-            <span className="w-2 h-2 rounded-full bg-accent-secondary animate-pulse" />
-            Nexera Services
-          </motion.div>
-
-          {/* Headline */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-            className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tight leading-[1.1] mb-6"
-          >
-            Building the <br />
-            <span className="text-gradient">Software That Powers</span> <br />
-            Your Operations
+            We Build <br className="hidden sm:inline" />
+            <span className="bg-gradient-to-br from-zinc-900 via-zinc-800 to-[#ffcd75] dark:from-white dark:via-white dark:to-[#ffcd75] bg-clip-text text-transparent">Digital Experiences</span> <br />
+            That Convert.
           </motion.h1>
 
-          {/* Subheadline */}
+          {/* Subheading */}
           <motion.p
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 15 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-base sm:text-lg text-text-muted max-w-xl mb-10 leading-relaxed mx-auto lg:mx-0"
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm md:text-base leading-relaxed max-w-2xl font-sans"
+            id="hero-subtitle"
           >
-            From custom school portals to high-performance enterprise automation, Nexera Services
-            architects robust digital systems that eliminate operational overhead and scale your organization.
+            Nexera Services helps businesses, educational institutions, startups, and organizations adopt high-performance digital solutions through custom software, web applications, and server-side AI integrations.
           </motion.p>
 
-          {/* Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start mb-14"
-          >
-            <a
-              href="#contact"
-              className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-accent-primary to-accent-secondary text-white font-semibold rounded-full flex items-center justify-center gap-2 shadow-xl hover:shadow-accent-primary/20 hover:scale-105 transition-all duration-300"
-            >
-              Get Started
-              <ArrowRight className="w-5 h-5" />
-            </a>
-            <a
-              href="#portfolio"
-              className="w-full sm:w-auto px-8 py-4 border border-card-border glass-panel hover:bg-foreground/5 dark:hover:bg-white/5 font-semibold rounded-full flex items-center justify-center gap-2 transition-all duration-300"
-            >
-              <Play className="w-4 h-4 fill-foreground/80 text-foreground/80" />
-              View Our Work
-            </a>
-          </motion.div>
-
-          {/* Metrics Grid */}
+          {/* Founding Statistics Counters */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="grid grid-cols-2 md:grid-cols-4 gap-6 border-t border-card-border pt-8 text-left"
+            transition={{ delay: 0.2 }}
+            className="grid grid-cols-3 gap-3 pt-2"
+            id="hero-trust-counters"
           >
-            {metrics.map((m) => (
-              <div key={m.label} className="flex flex-col">
-                <span className="text-2xl font-black bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                  {m.value}
-                </span>
-                <span className="text-xs text-text-muted font-medium mt-1">
-                  {m.label}
-                </span>
-              </div>
-            ))}
+            <div className="p-3 rounded-2xl bg-zinc-100/50 dark:bg-white/[0.01] border border-zinc-200/80 dark:border-white/5 text-left shadow-sm dark:shadow-none">
+              <div className="text-[9px] text-zinc-500 font-mono uppercase tracking-widest">Founding Slots</div>
+              <div className="text-sm sm:text-lg font-sans font-bold text-zinc-900 dark:text-white mt-0.5">Limited</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-zinc-100/50 dark:bg-white/[0.01] border border-zinc-200/80 dark:border-white/5 text-left shadow-sm dark:shadow-none">
+              <div className="text-[9px] text-zinc-500 font-mono uppercase tracking-widest">Launch Discount</div>
+              <div className="text-sm sm:text-lg font-sans font-bold text-[#ffcd75] mt-0.5">25% Off</div>
+            </div>
+            <div className="p-3 rounded-2xl bg-zinc-100/50 dark:bg-white/[0.01] border border-zinc-200/80 dark:border-white/5 text-left shadow-sm dark:shadow-none">
+              <div className="text-[9px] text-zinc-500 font-mono uppercase tracking-widest">Founder Involvement</div>
+              <div className="text-sm sm:text-lg font-sans font-bold text-zinc-900 dark:text-white mt-0.5">100% Direct</div>
+            </div>
+          </motion.div>
+
+          {/* CTA Action Group */}
+          <motion.div
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 pt-4"
+            id="hero-ctas"
+          >
+            <button
+              onClick={() => scrollToSection("contact")}
+              className="bg-[#ffcd75] text-zinc-950 font-mono text-xs font-bold py-3.5 px-6 rounded-xl cursor-pointer hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-950 transition-all text-center shrink-0 shadow-[0_0_20px_rgba(255,205,117,0.25)]"
+              id="hero-primary-cta"
+            >
+              Start a Project
+            </button>
+            <button
+              onClick={() => scrollToSection("solutions")}
+              className="bg-white/5 dark:bg-white/5 hover:bg-zinc-100 dark:hover:bg-white/10 text-zinc-800 dark:text-white border border-zinc-200 dark:border-white/10 font-mono text-xs font-bold py-3.5 px-6 rounded-xl cursor-pointer transition-all text-center flex items-center justify-center gap-1.5 shadow-sm dark:shadow-none"
+              id="hero-secondary-cta"
+            >
+              Explore Solutions
+              <ArrowRight size={13} className="text-[#ffcd75] shrink-0" />
+            </button>
           </motion.div>
         </div>
 
-        {/* Right: Floating Holographic Cards */}
-        <div className="lg:col-span-5 relative h-[380px] sm:h-[450px] w-full hidden sm:flex items-center justify-center">
+        {/* Hero Right: Clean Project Milestones Preview */}
+        <div className="lg:col-span-5 h-[320px] sm:h-[400px] relative w-full flex items-center justify-center" id="hero-right">
+          {/* Ambient gold glow card behind */}
+          <div className="absolute inset-0 bg-gradient-to-b from-[#ffcd75]/5 to-transparent rounded-[32px] blur-2xl pointer-events-none" />
           
-          {/* Card 1: AI Processing */}
-          <motion.div
-            initial={{ opacity: 0, x: 50, y: -50 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 1, delay: 0.3 }}
-            className="absolute top-4 right-4 w-60 p-5 rounded-2xl glass-panel glass-panel-hover animate-float cursor-pointer"
-            style={{ animationDuration: "7s" }}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-purple-500/10 flex items-center justify-center text-purple-500">
-                <Cpu className="w-5 h-5 animate-pulse" />
+          {/* The main glass container panel */}
+          <div className="w-full h-full rounded-[32px] border border-zinc-200 dark:border-white/10 bg-white/60 dark:bg-white/[0.02] backdrop-blur-xl p-6 sm:p-8 flex flex-col justify-between relative overflow-hidden group hover:border-[#ffcd75]/30 dark:hover:border-[#ffcd75]/20 transition-all duration-700 shadow-sm">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-[#ffcd75]/5 rounded-full blur-2xl" />
+            
+            <div className="flex items-center justify-between border-b border-zinc-100 dark:border-white/5 pb-4">
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 rounded-full bg-zinc-200 dark:bg-white/10" />
+                <span className="w-3 h-3 rounded-full bg-zinc-200 dark:bg-white/10" />
+                <span className="w-3 h-3 rounded-full bg-zinc-200 dark:bg-white/10" />
               </div>
-              <div>
-                <h3 className="font-bold text-xs uppercase tracking-wider text-purple-400">AI Engine</h3>
-                <span className="text-[10px] text-text-muted">Document Analysis</span>
-              </div>
+              <span className="text-[9px] font-mono text-zinc-500 bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 px-2 py-0.5 rounded uppercase shadow-sm dark:shadow-none">Client workspace</span>
             </div>
-            <div className="space-y-1.5 mt-2">
-              <div className="w-full h-1.5 rounded-full bg-card-border overflow-hidden">
-                <div className="h-full bg-purple-500 rounded-full animate-[pulse_1.5s_infinite]" style={{ width: "84%" }} />
-              </div>
-              <div className="flex justify-between text-[9px] text-text-muted">
-                <span>Accuracy Rate</span>
-                <span className="font-bold text-purple-400">99.2%</span>
-              </div>
-            </div>
-          </motion.div>
 
-          {/* Card 2: Security */}
-          <motion.div
-            initial={{ opacity: 0, x: -50, y: 50 }}
-            animate={{ opacity: 1, x: 0, y: 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="absolute bottom-6 left-4 w-60 p-5 rounded-2xl glass-panel glass-panel-hover animate-float cursor-pointer"
-            style={{ animationDuration: "9s" }}
-          >
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center text-emerald-500">
-                <Shield className="w-5 h-5" />
+            {/* Schematic blueprint mockup display */}
+            <div className="my-auto space-y-4 relative z-10 text-left">
+              <div className="p-4 rounded-2xl bg-white dark:bg-zinc-950/80 border border-zinc-200 dark:border-white/10 space-y-3 relative overflow-hidden shadow-sm">
+                <div className="absolute right-2 top-2 text-[#ffcd75]">
+                  <Sparkles size={12} />
+                </div>
+                
+                <div className="text-[10px] text-[#ffcd75] font-mono uppercase tracking-wider">Estimated Project Blueprint</div>
+                <div className="space-y-2">
+                  <div className="text-xs text-zinc-800 dark:text-zinc-200 font-sans flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-[#ffcd75]/10 flex items-center justify-center text-[10px] font-bold text-[#ffcd75]">1</div>
+                    <span>Custom System Architecture & Wireframes</span>
+                  </div>
+                  <div className="text-xs text-zinc-800 dark:text-zinc-200 font-sans flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-[#ffcd75]/10 flex items-center justify-center text-[10px] font-bold text-[#ffcd75]">2</div>
+                    <span>Secure Backend Services & API Proxy Setup</span>
+                  </div>
+                  <div className="text-xs text-zinc-800 dark:text-zinc-200 font-sans flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-[#ffcd75]/10 flex items-center justify-center text-[10px] font-bold text-[#ffcd75]">3</div>
+                    <span>Client Dashboard & User Interface Rollout</span>
+                  </div>
+                </div>
               </div>
-              <div>
-                <h3 className="font-bold text-xs uppercase tracking-wider text-emerald-400">Security</h3>
-                <span className="text-[10px] text-text-muted">End-to-End Encrypted</span>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 rounded-xl bg-zinc-100/50 dark:bg-white/5 border border-zinc-200/50 dark:border-white/5 shadow-sm dark:shadow-none">
+                  <div className="text-[8px] font-mono text-zinc-500 uppercase">Average Delivery</div>
+                  <div className="text-xs font-bold text-zinc-900 dark:text-white mt-1">4 - 8 Sprints</div>
+                </div>
+                <div className="p-3 rounded-xl bg-zinc-100/50 dark:bg-white/5 border border-zinc-200/50 dark:border-white/5 shadow-sm dark:shadow-none">
+                  <div className="text-[8px] font-mono text-zinc-500 uppercase">Production Status</div>
+                  <div className="text-xs font-bold text-emerald-500 mt-1">Uptime SLA Active</div>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-2 mt-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block animate-ping" />
-              <span className="text-[11px] font-semibold text-foreground/80">SSL & Threat Shield Active</span>
-            </div>
-          </motion.div>
 
-          {/* Card 3: Performance/Analytics */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1, delay: 0.7 }}
-            className="absolute top-1/3 left-1/10 w-56 p-4 rounded-2xl glass-panel glass-panel-hover animate-float cursor-pointer"
-            style={{ animationDuration: "5s" }}
-          >
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-bold text-text-muted">System Load</span>
-              <Activity className="w-4 h-4 text-cyan-400" />
+            <div className="border-t border-zinc-100 dark:border-white/5 pt-4 flex items-center justify-between">
+              <span className="text-[10px] text-zinc-500 font-mono font-medium">NEXERA DELIVERY SYSTEM</span>
+              <span className="text-[10px] text-zinc-400 font-mono">v1.4</span>
             </div>
-            <div className="text-2xl font-black text-foreground">
-              99.9%
-            </div>
-            <div className="text-[9px] text-emerald-400 mt-1 flex items-center gap-1">
-              <span>↑ 0.05% Uptime</span>
-              <span className="text-text-muted">vs last month</span>
-            </div>
-          </motion.div>
-
+          </div>
         </div>
+
       </div>
     </section>
   );

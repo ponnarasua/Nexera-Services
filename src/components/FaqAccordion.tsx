@@ -1,104 +1,69 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, HelpCircle } from "lucide-react";
+import { Plus, X, Star } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const faqs = [
-  {
-    q: "How long does development take?",
-    a: "MVPs and landing pages typically take 2 to 4 weeks, while complex systems like custom ERPs or student databases take 8 to 12 weeks. We map out detailed weekly milestones during discovery so you always know what to expect."
-  },
-  {
-    q: "Do you provide maintenance?",
-    a: "Yes! We offer monthly maintenance packages which include core server upgrades, security patches, database backups, performance tuning, and immediate support ticketing responses."
-  },
-  {
-    q: "Can you modernize existing systems?",
-    a: "Absolutely. We specialize in migrating legacy databases, manual spreadsheets, or older software stacks to modern Next.js and PostgreSQL web systems with zero data loss and minimal operational downtime."
-  },
-  {
-    q: "Do you build custom software?",
-    a: "Yes, every system we deliver is 100% custom-written to fit your business requirements and organization logic. We avoid templated builders to guarantee maximum speed, styling control, and scaling stability."
-  },
-  {
-    q: "What industries do you serve?",
-    a: "We work across education (private academies, colleges, tutoring centers), service businesses, tech startups, e-commerce, logistics, and professional teams. If you have data to organize or processes to automate, we can help."
-  }
-];
+import { FAQS } from "@/data";
 
 export default function FaqAccordion() {
-  const [openIdx, setOpenIdx] = useState<number | null>(null);
-
-  const toggleFaq = (idx: number) => {
-    setOpenIdx(openIdx === idx ? null : idx);
-  };
+  const [expandedFaqIndex, setExpandedFaqIndex] = useState<number | null>(null);
 
   return (
-    <section className="py-24 relative overflow-hidden bg-background/50 border-t border-card-border">
-      {/* Decorative background glow */}
-      <div className="absolute bottom-1/4 right-1/10 w-96 h-96 rounded-full bg-accent-primary/5 blur-[120px] pointer-events-none -z-10" />
-
-      <div className="w-full px-6 md:px-12 lg:px-20 relative z-10">
+    <section className="py-24 border-b border-zinc-100 dark:border-white/5 relative z-10 bg-zinc-100/10 dark:bg-zinc-950/20 text-zinc-900 dark:text-white" id="faqs">
+      <div className="max-w-4xl mx-auto px-6 text-left">
         
         {/* Section Header */}
-        <div className="max-w-2xl mx-auto text-center mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-card-border bg-card-bg/50 text-xs font-bold uppercase tracking-wider text-accent-primary dark:text-accent-secondary">
-            FAQ Help
-          </div>
-          <h2 className="text-3xl sm:text-4xl font-black tracking-tight leading-tight">
-            Frequently Asked <br />
-            <span className="text-gradient">Questions</span>
+        <div className="text-center mb-16 space-y-3">
+          <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100/80 dark:bg-white/5 px-3 py-1.5 backdrop-blur-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+            <Star size={11} className="fill-[#ffcd75] text-[#ffcd75]" />
+            06 // COMPLIANCE & PROTOCOL FAQS
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-medium tracking-tighter leading-[1.0] text-zinc-900 dark:text-white">
+            SLA & Security FAQs.
           </h2>
-          <p className="text-text-muted max-w-xl mx-auto text-sm leading-relaxed">
-            Got questions about our services or workflows? We compiled details on major
-            points. For anything else, reach out directly.
+          <p className="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm font-sans leading-relaxed max-w-xl mx-auto text-center">
+            Got technical questions about backend routes, key handling, or Drizzle database migrations? Inspect our protocols below.
           </p>
         </div>
 
-        {/* Accordions List */}
-        <div className="space-y-4">
-          {faqs.map((faq, idx) => {
-            const isOpen = openIdx === idx;
+        {/* Expandable accordions */}
+        <div className="space-y-3" id="faq-accordions-group">
+          {FAQS.map((faq, i) => {
+            const isExpanded = expandedFaqIndex === i;
             return (
               <div 
-                key={idx}
-                className="rounded-2xl glass-panel overflow-hidden border border-card-border/80 transition-all duration-300"
+                key={i} 
+                className="rounded-2xl border border-zinc-200 dark:border-white/10 bg-white/50 dark:bg-white/[0.01] overflow-hidden shadow-sm dark:shadow-none"
+                id={`faq-item-${i}`}
               >
-                {/* Header Button */}
                 <button
-                  onClick={() => toggleFaq(idx)}
-                  className="w-full px-6 py-5 flex items-center justify-between text-left font-bold text-sm sm:text-base hover:bg-foreground/2 dark:hover:bg-white/2 select-none group"
+                  onClick={() => setExpandedFaqIndex(isExpanded ? null : i)}
+                  className="w-full text-left p-5 flex items-center justify-between gap-4 cursor-pointer hover:bg-zinc-50 dark:hover:bg-white/[0.01] transition-all"
                 >
-                  <div className="flex items-center gap-3">
-                    <HelpCircle className="w-5 h-5 text-accent-primary dark:text-accent-secondary shrink-0" />
-                    <span className="text-foreground/90 group-hover:text-foreground">
-                      {faq.q}
-                    </span>
-                  </div>
-                  <ChevronDown 
-                    className={`w-5 h-5 text-text-muted transition-transform duration-300 shrink-0 ${
-                      isOpen ? "rotate-180 text-accent-primary dark:text-accent-secondary" : ""
-                    }`} 
-                  />
+                  <span className="text-xs sm:text-sm font-sans font-medium text-zinc-800 dark:text-white tracking-tight">
+                    {faq.question}
+                  </span>
+                  <span className="shrink-0 text-[#ffcd75]">
+                    {isExpanded ? <X size={14} /> : <Plus size={14} />}
+                  </span>
                 </button>
 
-                {/* Animated Body panel */}
                 <AnimatePresence initial={false}>
-                  {isOpen && (
+                  {isExpanded && (
                     <motion.div
                       initial={{ height: 0, opacity: 0 }}
                       animate={{ height: "auto", opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                      transition={{ duration: 0.3 }}
                     >
-                      <div className="px-6 pb-6 pt-1 text-xs sm:text-sm text-text-muted leading-relaxed border-t border-card-border/50">
-                        {faq.a}
+                      <div className="px-5 pb-5 border-t border-zinc-200 dark:border-white/5 pt-3">
+                        <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">
+                          {faq.answer}
+                        </p>
                       </div>
                     </motion.div>
                   )}
                 </AnimatePresence>
-
               </div>
             );
           })}

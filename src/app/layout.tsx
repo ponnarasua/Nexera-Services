@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
-import CursorFollower from "@/components/CursorFollower";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -102,7 +101,7 @@ export default function RootLayout({
         "priceRange": "$$",
         "address": {
           "@type": "PostalAddress",
-          "addressCountry": "US"
+          "addressCountry": "IN"
         },
         "knowsAbout": [
           "Custom Software Development",
@@ -126,7 +125,6 @@ export default function RootLayout({
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-full flex flex-col antialiased bg-background text-foreground`}>
         <ThemeProvider>
-          <CursorFollower />
           {children}
         </ThemeProvider>
       </body>

@@ -1,504 +1,404 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
-import { 
-  Calendar, 
-  Check, 
-  Send, 
-  Sparkles,
-  ChevronDown,
-  Globe,
-  Smartphone,
-  Terminal,
-  Cloud,
-  Bot,
-  Settings
-} from "lucide-react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "@/context/ThemeContext";
+import { 
+  Send, Sparkles, Calendar, 
+  Clock, ShieldCheck, 
+  Mail, Star, ChevronRight
+} from "lucide-react";
+import ParticleOrbCanvas from "./ParticleOrbCanvas";
 
-const serviceOptions = [
-  { value: "custom-software", label: "Custom Software Development", icon: Terminal },
-  { value: "saas-web-dev", label: "SaaS & Web Product Engineering", icon: Globe },
-  { value: "mobile-apps", label: "Mobile Application Engineering", icon: Smartphone },
-  { value: "cloud-devops", label: "Cloud & DevSecOps Solutions", icon: Cloud },
-  { value: "ai-systems", label: "AI Integration & Cognitive Systems", icon: Bot },
-  { value: "managed-it", label: "Maintenance & Managed IT Services", icon: Settings },
-];
+interface RoadmapStep {
+  step: string;
+  duration: string;
+  desc: string;
+}
 
-// --- 3D Particle Orb Canvas Component ---
-function OrbCanvas() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    if (!canvasRef.current) return;
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let width = canvas.width = 400;
-    let height = canvas.height = 400;
-
-    const particles: { x: number; y: number; z: number; px: number; py: number }[] = [];
-    const particleCount = 180;
-    const sphereRadius = 110;
-    const perspective = 300;
-
-    // Create particles distributed on sphere surface
-    for (let i = 0; i < particleCount; i++) {
-      const theta = Math.random() * Math.PI * 2;
-      const phi = Math.acos(Math.random() * 2 - 1);
-
-      const x = sphereRadius * Math.sin(phi) * Math.cos(theta);
-      const y = sphereRadius * Math.sin(phi) * Math.sin(theta);
-      const z = sphereRadius * Math.cos(phi);
-
-      particles.push({ x, y, z, px: 0, py: 0 });
-    }
-
-    let mouseX = 0;
-    let mouseY = 0;
-    let targetX = 0;
-    let targetY = 0;
-
-    const handleMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouseX = (e.clientX - rect.left - width / 2) * 0.05;
-      mouseY = (e.clientY - rect.top - height / 2) * 0.05;
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-
-    const angleX = 0.005;
-    const angleY = 0.008;
-    let animationFrameId: number;
-
-    const render = () => {
-      ctx.clearRect(0, 0, width, height);
-
-      // Smooth mouse tilt
-      targetX += (mouseX - targetX) * 0.08;
-      targetY += (mouseY - targetY) * 0.08;
-
-      const cosX = Math.cos(angleX + targetY * 0.002);
-      const sinX = Math.sin(angleX + targetY * 0.002);
-      const cosY = Math.cos(angleY + targetX * 0.002);
-      const sinY = Math.sin(angleY + targetX * 0.002);
-
-      // Center coords
-      const cx = width / 2;
-      const cy = height / 2;
-
-      // Project & rotate particles
-      particles.forEach((p) => {
-        // Rotate Y
-        const x1 = p.x * cosY - p.z * sinY;
-        const z1 = p.z * cosY + p.x * sinY;
-
-        // Rotate X
-        const y2 = p.y * cosX - z1 * sinX;
-        const z2 = z1 * cosX + p.y * sinX;
-
-        p.x = x1;
-        p.y = y2;
-        p.z = z2;
-
-        // Perspective Projection
-        const scale = perspective / (perspective + z2);
-        p.px = cx + x1 * scale;
-        p.py = cy + y2 * scale;
-
-        // Color & alpha based on Z-depth (fade back particles)
-        const alpha = (z2 + sphereRadius) / (sphereRadius * 2); // 0 to 1
-        const size = Math.max(0.5, scale * 1.8);
-
-        ctx.beginPath();
-        ctx.arc(p.px, p.py, size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(34, 211, 238, ${0.2 + alpha * 0.7})`; // cyan tinted glow
-        ctx.fill();
-      });
-
-      // Draw lines between neighboring particles
-      ctx.strokeStyle = "rgba(99, 102, 241, 0.08)"; // indigo web lines
-      ctx.lineWidth = 0.5;
-      for (let i = 0; i < particleCount; i++) {
-        for (let j = i + 1; j < particleCount; j++) {
-          const dx = particles[i].px - particles[j].px;
-          const dy = particles[i].py - particles[j].py;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-
-          // Draw line if projected distance is short
-          if (dist < 40) {
-            ctx.beginPath();
-            ctx.moveTo(particles[i].px, particles[i].py);
-            ctx.lineTo(particles[j].px, particles[j].py);
-            ctx.stroke();
-          }
-        }
-      }
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    // Handle Resize
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        width = canvas.width = entry.contentRect.width;
-        height = canvas.height = entry.contentRect.height;
-      }
-    });
-    resizeObserver.observe(canvas);
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-      window.removeEventListener("mousemove", handleMouseMove);
-      resizeObserver.disconnect();
-    };
-  }, []);
-
-  return <canvas ref={canvasRef} className="w-full h-full max-w-[400px] max-h-[400px]" />;
+interface RoadmapResult {
+  success: boolean;
+  message: string;
+  generatedRoadmap: RoadmapStep[];
 }
 
 export default function Contact() {
-  const { theme } = useTheme();
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    phone: "",
-    organization: "",
-    service: "custom-software",
-    budget: "",
-    message: ""
-  });
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [company, setCompany] = useState("");
+  const [service, setService] = useState("Custom Software Development");
+  const [budget, setBudget] = useState("");
+  const [message, setMessage] = useState("");
 
-  const [submitted, setSubmitted] = useState(false);
-  const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  // Field-level validation errors
+  const [nameErr, setNameErr] = useState("");
+  const [emailErr, setEmailErr] = useState("");
+  const [messageErr, setMessageErr] = useState("");
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setDropdownOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-  const [loading, setLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [roadmapResult, setRoadmapResult] = useState<RoadmapResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  const validateFields = () => {
+    let valid = true;
+    setNameErr(""); setEmailErr(""); setMessageErr("");
+    if (!name.trim() || name.trim().length < 2) { setNameErr("Please enter your full name (at least 2 characters)."); valid = false; }
+    if (!email.trim() || !emailRegex.test(email.trim())) { setEmailErr("Please enter a valid email address."); valid = false; }
+    if (!message.trim() || message.trim().length < 10) { setMessageErr("Please describe your requirements (at least 10 characters)."); valid = false; }
+    return valid;
+  };
+
+  const handleInquirySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    if (!validateFields()) return;
+
+    setIsSubmitting(true);
+    setRoadmapResult(null);
     setError(null);
 
     try {
-      const res = await fetch("/api/contact", {
+      const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify({
+          name,
+          email,
+          phone,
+          company,
+          service,
+          budget: budget.trim() ? (budget.trim().startsWith("₹") ? budget.trim() : `₹${budget.trim()}`) : "Flexible",
+          message
+        })
       });
 
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Something went wrong. Please try again.");
-        return;
+      if (!response.ok) {
+        const errData = await response.json();
+        throw new Error(errData.error || "Failed to submit inquiry.");
       }
 
-      setSubmitted(true);
-      setForm({
-        name: "",
-        email: "",
-        phone: "",
-        organization: "",
-        service: "custom-software",
-        budget: "",
-        message: ""
-      });
-    } catch {
-      setError("Network error. Please check your connection and try again.");
+      const data = await response.json();
+      setRoadmapResult(data);
+    } catch (err: unknown) {
+      const errorMsg = err instanceof Error ? err.message : "Failed to submit inquiry. Please try again.";
+      setError(errorMsg);
+      // Fallback local calculations
+      setTimeout(() => {
+        setRoadmapResult({
+          success: true,
+          message: "Local offline dispatcher initialized.",
+          generatedRoadmap: [
+            { step: "Phase 1: Discovery & Concept Scope", duration: "1-2 weeks", desc: `Discovery sessions, system-boundary blueprints for your custom ${service} project.` },
+            { step: "Phase 2: High-Fidelity UI Design", duration: "1-2 weeks", desc: "Crafting beautiful obsidian glassmorphic screens featuring Playfair typography." },
+            { step: "Phase 3: Agile Development Sprints", duration: "3-4 weeks", desc: "Bi-weekly sprint iterations accompanied by interactive preview links." },
+            { step: "Phase 4: Launch & SLA Orchestration", duration: "Ongoing support", desc: "Zero-downtime containerized launch with automated error reporting." }
+          ]
+        });
+      }, 1000);
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  return (
-    <section id="contact" className="py-24 relative overflow-hidden bg-background">
-      <div className="absolute top-1/4 right-0 w-80 h-80 rounded-full bg-accent-secondary/5 blur-[120px] pointer-events-none -z-10" />
+  const handleScheduleMeet = () => {
+    const formattedBudget = budget.trim() ? (budget.trim().startsWith("₹") ? budget.trim() : `₹${budget.trim()}`) : "Flexible";
+    window.location.href = `mailto:nexeraser@gmail.com?subject=Nexera Services - Consultation Inquiry (${service})&body=Hi Nexera Team,%0D%0A%0D%0AMy name is ${name || "Client"} and I would like to schedule a 30-minute Google Meet consultation to explore modern solutions for my business.%0D%0A%0D%0ADetails:%0D%0A- Company: ${company || "N/A"}%0D%0A- Phone: ${phone || "Not provided"}%0D%0A- Preferred Service: ${service}%0D%0A- Estimated Budget: ${formattedBudget}%0D%0A%0D%0ALooking forward to connecting!`;
+  };
 
-      <div className="w-full px-6 md:px-12 lg:px-20 relative z-10">
+  return (
+    <section className="py-24 border-b border-zinc-150 dark:border-white/5 relative z-10 text-zinc-900 dark:text-white" id="contact">
+      <div className="max-w-7xl mx-auto px-6 space-y-12">
         
-        {/* Header */}
-        <div className="max-w-3xl mx-auto text-center mb-16 space-y-4">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-card-border bg-card-bg/50 text-xs font-bold uppercase tracking-wider text-accent-primary dark:text-accent-secondary">
-            Get In Touch
-          </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
-            Ready to Accelerate <br />
-            <span className="text-gradient">Your Modernization?</span>
+        {/* Section Header */}
+        <div className="text-left max-w-3xl space-y-3">
+          <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100/80 dark:bg-white/5 px-3 py-1.5 backdrop-blur-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+            <Star size={11} className="fill-[#ffcd75] text-[#ffcd75]" />
+            07 // DYNAMIC SYSTEM CONFIG
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-medium tracking-tighter leading-[1.0] text-zinc-900 dark:text-white">
+            Launch Your Sprint Roadmap.
           </h2>
-          <p className="text-text-muted max-w-xl mx-auto text-sm leading-relaxed">
-            Fill out the request form below or schedule a direct Google Meet. We will review
-            your parameters and return a solution blueprint.
+          <p className="text-zinc-600 dark:text-zinc-400 text-xs sm:text-sm font-sans leading-relaxed">
+            Describe your organizational targets below. Nexera will instantly render a personalized 4-Phase project blueprint schematic.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-          
-          {/* Left: Contact Form Grid */}
-          <div className="lg:col-span-7 rounded-3xl glass-panel p-8 border-card-border shadow-2xl relative">
-            
+        {/* Form Layout */}
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch" id="contact-form-layout">
+          {/* Left Panel: Contact Fields */}
+          <div className="lg:col-span-7 bg-white/70 dark:bg-zinc-950/70 p-6 sm:p-8 rounded-3xl border border-zinc-200 dark:border-white/10 backdrop-blur-xl relative overflow-hidden flex flex-col justify-between" id="inquiry-form-card">
+            <div className="absolute top-0 right-0 w-48 h-48 bg-[#ffcd75]/5 rounded-full blur-3xl pointer-events-none" />
+
+            <div className="relative z-10">
+              <div className="mb-4">
+                <span className="inline-flex items-center gap-2 rounded-full border border-zinc-200 dark:border-white/10 bg-zinc-100/80 dark:bg-white/5 px-3 py-1.5 backdrop-blur-md text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-zinc-600 dark:text-zinc-300">
+                  <Star size={11} className="fill-[#ffcd75] text-[#ffcd75]" />
+                  Interactive Form Ingress
+                </span>
+              </div>
+
+              <h4 className="text-2xl font-sans font-medium tracking-tighter leading-none bg-gradient-to-br from-zinc-900 via-zinc-800 to-[#ffcd75] dark:from-white dark:via-white dark:to-[#ffcd75] bg-clip-text text-transparent mb-3">
+                Initiate Project Blueprint
+              </h4>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mb-6">
+                Describe your operational bottlenecks, registrar volumes, or AI automation goals. Nexera will formulate a tailored sprint roadmap.
+              </p>
+
+              <form onSubmit={handleInquirySubmit} className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1.5">Full Name *</label>
+                    <input
+                      type="text"
+                      value={name}
+                      onChange={(e) => { setName(e.target.value); if (nameErr) setNameErr(""); }}
+                      onBlur={() => { if (!name.trim() || name.trim().length < 2) setNameErr("Please enter your full name (at least 2 characters)."); }}
+                      placeholder="Your full name"
+                      className={`w-full bg-white/50 dark:bg-white/5 border rounded-xl px-4 py-3 text-xs text-zinc-800 dark:text-white focus:outline-none focus:border-[#ffcd75] transition-all ${nameErr ? "border-red-400 dark:border-red-500" : "border-zinc-200 dark:border-white/10"}`}
+                    />
+                    {nameErr && <p className="text-[10px] text-red-500 mt-1 font-sans">{nameErr}</p>}
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1.5">Email Address *</label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => { setEmail(e.target.value); if (emailErr) setEmailErr(""); }}
+                      onBlur={() => { if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) setEmailErr("Please enter a valid email address."); }}
+                      placeholder="you@example.com"
+                      className={`w-full bg-white/50 dark:bg-white/5 border rounded-xl px-4 py-3 text-xs text-zinc-800 dark:text-white focus:outline-none focus:border-[#ffcd75] transition-all ${emailErr ? "border-red-400 dark:border-red-500" : "border-zinc-200 dark:border-white/10"}`}
+                    />
+                    {emailErr && <p className="text-[10px] text-red-500 mt-1 font-sans">{emailErr}</p>}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1.5">Company / University</label>
+                    <input
+                      type="text"
+                      value={company}
+                      onChange={(e) => setCompany(e.target.value)}
+                      placeholder="Your company or institution"
+                      className="w-full bg-white/50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs text-zinc-800 dark:text-white focus:outline-none focus:border-[#ffcd75] transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1.5">Phone Number</label>
+                    <input
+                      type="tel"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="e.g. +91 98765 43210"
+                      className="w-full bg-white/50 dark:bg-white/5 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs text-zinc-800 dark:text-white focus:outline-none focus:border-[#ffcd75] transition-all"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1.5">Custom Service Selection</label>
+                  <select
+                    value={service}
+                    onChange={(e) => setService(e.target.value)}
+                    className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-xl px-4 py-3 text-xs text-zinc-800 dark:text-white focus:outline-none focus:border-[#ffcd75] transition-all cursor-pointer"
+                  >
+                    <option value="Custom Software Development" className="text-zinc-800 dark:text-white bg-white dark:bg-zinc-900">Custom Software Development</option>
+                    <option value="Web Development" className="text-zinc-800 dark:text-white bg-white dark:bg-zinc-900">Web Development</option>
+                    <option value="Educational Solutions" className="text-zinc-800 dark:text-white bg-white dark:bg-zinc-900">Educational Solutions</option>
+                    <option value="Business Automation" className="text-zinc-800 dark:text-white bg-white dark:bg-zinc-900">Business Automation</option>
+                    <option value="Cloud Solutions" className="text-zinc-800 dark:text-white bg-white dark:bg-zinc-900">Cloud Solutions</option>
+                    <option value="AI Systems" className="text-zinc-800 dark:text-white bg-white dark:bg-zinc-900">AI Systems</option>
+                  </select>
+                </div>
+
+                {/* Budget Limit typing box in Rupees */}
+                <div className="p-4 rounded-xl bg-zinc-100/50 dark:bg-white/[0.02] border border-zinc-200 dark:border-white/5">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-xs font-mono text-zinc-500 dark:text-zinc-400">Budget Limit (in ₹):</span>
+                    <span className="text-xs font-mono font-bold text-[#ffcd75]">
+                      {budget.trim() ? (budget.trim().startsWith("₹") ? budget.trim() : `₹${budget.trim()}`) : "Flexible"}
+                    </span>
+                  </div>
+                  <div className="relative flex items-center">
+                    <span className="absolute left-3 text-xs font-mono text-[#ffcd75] font-bold">₹</span>
+                    <input
+                      type="text"
+                      value={budget}
+                      onChange={(e) => {
+                        const val = e.target.value.replace(/[^0-9,\s-]/g, ""); // Allow digits, commas, spaces, dashes
+                        setBudget(val);
+                      }}
+                      placeholder="e.g. 1,50,000"
+                      className="w-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/10 rounded-xl pl-7 pr-4 py-2 text-xs text-zinc-800 dark:text-white focus:outline-none focus:border-[#ffcd75] transition-all font-mono"
+                    />
+                  </div>
+                  <p className="text-[10px] text-zinc-500 font-sans italic mt-1.5">
+                    Type your expected or limit project allocation directly in Indian Rupees (leave blank for flexible).
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-mono text-zinc-500 dark:text-zinc-400 mb-1.5">Message Details *</label>
+                  <textarea
+                    rows={3}
+                    value={message}
+                    onChange={(e) => { setMessage(e.target.value); if (messageErr) setMessageErr(""); }}
+                    onBlur={() => { if (!message.trim() || message.trim().length < 10) setMessageErr("Please describe your requirements (at least 10 characters)."); }}
+                    placeholder="Describe key requirements, deadlines, or integrations required..."
+                    className={`w-full bg-white/50 dark:bg-white/5 border rounded-xl px-4 py-3 text-xs text-zinc-800 dark:text-white focus:outline-none focus:border-[#ffcd75] transition-all resize-none ${messageErr ? "border-red-400 dark:border-red-500" : "border-zinc-200 dark:border-white/10"}`}
+                  />
+                  {messageErr && <p className="text-[10px] text-red-500 mt-1 font-sans">{messageErr}</p>}
+                </div>
+
+                {error && (
+                  <div className="p-3 text-xs text-red-500 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-xl">
+                    {error}
+                  </div>
+                )}
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="flex-1 sm:flex-none bg-[#ffcd75] text-zinc-950 font-mono text-xs font-bold py-3.5 px-6 rounded-xl cursor-pointer hover:bg-zinc-900 hover:text-white dark:hover:bg-white dark:hover:text-zinc-950 transition-all flex items-center justify-center gap-2 shrink-0 disabled:bg-zinc-700 disabled:text-zinc-500"
+                    id="submit-inquiry-form-btn"
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <Clock className="animate-spin" size={14} />
+                        Compiling Schematic...
+                      </>
+                    ) : (
+                      <>
+                        <Send size={14} />
+                        Build Custom Blueprint
+                      </>
+                    )}
+                  </button>
+
+                  <span className="text-zinc-400 dark:text-zinc-600 text-xs font-mono text-center hidden sm:inline">or</span>
+
+                  <button
+                    type="button"
+                    onClick={handleScheduleMeet}
+                    className="flex-1 sm:flex-none bg-zinc-100 hover:bg-zinc-200 dark:bg-white/5 dark:hover:bg-white/10 text-zinc-800 dark:text-white border border-zinc-200 dark:border-white/10 font-mono text-xs font-bold py-3.5 px-6 rounded-xl cursor-pointer transition-all flex items-center justify-center gap-2 whitespace-nowrap"
+                    id="google-meet-cta-btn"
+                  >
+                    <Calendar size={14} className="text-[#ffcd75]" />
+                    Schedule Google Meet Call
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Right Panel: Canvas-based Orb / dynamic blueprint */}
+          <div className="lg:col-span-5 flex flex-col justify-between" id="contact-sidebar-blueprint">
             <AnimatePresence mode="wait">
-              {!submitted ? (
-                <motion.form 
-                   key="contact-form"
-                   onSubmit={handleSubmit} 
-                   className="space-y-6"
-                   exit={{ opacity: 0, scale: 0.95 }}
-                   transition={{ duration: 0.3 }}
-                >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {/* Full Name */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-extrabold uppercase text-text-muted">Full Name</label>
-                      <input 
-                        type="text" 
-                        required
-                        value={form.name}
-                        onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        placeholder="John Doe"
-                        className="w-full px-4 py-3 rounded-xl border border-card-border bg-foreground/3 dark:bg-white/3 text-xs sm:text-sm font-semibold text-foreground focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
-                      />
-                    </div>
-                    {/* Email */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-extrabold uppercase text-text-muted">Email Address</label>
-                      <input 
-                        type="email" 
-                        required
-                        value={form.email}
-                        onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        placeholder="hello@company.com"
-                        className="w-full px-4 py-3 rounded-xl border border-card-border bg-foreground/3 dark:bg-white/3 text-xs sm:text-sm font-semibold text-foreground focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                    {/* Phone */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-extrabold uppercase text-text-muted">Phone Number</label>
-                      <input 
-                        type="tel"
-                        value={form.phone}
-                        onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                        placeholder="+1 (555) 000-0000"
-                        className="w-full px-4 py-3 rounded-xl border border-card-border bg-foreground/3 dark:bg-white/3 text-xs sm:text-sm font-semibold text-foreground focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
-                      />
-                    </div>
-                    {/* Organization */}
-                    <div className="space-y-2">
-                      <label className="text-xs font-extrabold uppercase text-text-muted">Organization</label>
-                      <input 
-                        type="text"
-                        value={form.organization}
-                        onChange={(e) => setForm({ ...form, organization: e.target.value })}
-                        placeholder="Academy / Startup Name"
-                        className="w-full px-4 py-3 rounded-xl border border-card-border bg-foreground/3 dark:bg-white/3 text-xs sm:text-sm font-semibold text-foreground focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Service Required */}
-                  <div className="space-y-2 relative" ref={dropdownRef}>
-                    <label className="text-xs font-extrabold uppercase text-text-muted">Service Required</label>
-                    
-                    <button
-                      type="button"
-                      onClick={() => setDropdownOpen(!dropdownOpen)}
-                      className={`w-full px-4 py-3 rounded-xl border text-xs sm:text-sm font-semibold text-foreground flex items-center justify-between focus:outline-none focus:ring-1 select-none cursor-pointer transition-all duration-200 ${
-                        theme === "dark"
-                          ? "border-card-border bg-white/5 hover:border-accent-secondary/50 focus:border-accent-secondary focus:ring-accent-secondary"
-                          : "border-card-border bg-foreground/5 hover:border-accent-primary/50 focus:border-accent-primary focus:ring-accent-primary"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        {(() => {
-                          const currentOpt = serviceOptions.find(opt => opt.value === form.service);
-                          if (currentOpt) {
-                            const Icon = currentOpt.icon;
-                            return (
-                              <>
-                                <Icon className="w-4 h-4 text-accent-secondary" />
-                                <span>{currentOpt.label}</span>
-                              </>
-                            );
-                          }
-                          return <span>Select a service</span>;
-                        })()}
-                      </div>
-                      <ChevronDown className={`w-4 h-4 text-text-muted transition-transform duration-200 ${dropdownOpen ? "rotate-180" : ""}`} />
-                    </button>
-
-                    <AnimatePresence>
-                      {dropdownOpen && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -8, scale: 0.95 }}
-                          animate={{ opacity: 1, y: 0, scale: 1 }}
-                          exit={{ opacity: 0, y: -8, scale: 0.95 }}
-                          transition={{ duration: 0.15, ease: "easeOut" }}
-                          className={`absolute left-0 right-0 mt-1.5 z-30 rounded-2xl border shadow-2xl p-1.5 max-h-[300px] overflow-y-auto no-scrollbar ${
-                            theme === "dark"
-                              ? "bg-[#151622] border-white/10 shadow-[0_12px_40px_-4px_rgba(99,102,241,0.3)]"
-                              : "bg-white border-card-border shadow-2xl"
-                          }`}
-                        >
-                          {serviceOptions.map((opt) => {
-                            const Icon = opt.icon;
-                            const isSelected = form.service === opt.value;
-                            return (
-                              <button
-                                key={opt.value}
-                                type="button"
-                                onClick={() => {
-                                  setForm({ ...form, service: opt.value });
-                                  setDropdownOpen(false);
-                                }}
-                                className={`w-full px-3 py-2.5 rounded-xl text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors duration-200 select-none cursor-pointer ${
-                                  isSelected
-                                    ? (theme === "dark" 
-                                        ? "bg-accent-secondary/15 text-accent-secondary font-bold" 
-                                        : "bg-accent-primary/10 text-accent-primary font-bold")
-                                    : (theme === "dark"
-                                        ? "text-foreground hover:bg-white/8"
-                                        : "text-foreground hover:bg-foreground/5")
-                                }`}
-                              >
-                                <div className="flex items-center gap-2.5">
-                                  <Icon className={`w-4 h-4 ${isSelected ? "text-accent-secondary" : "text-text-muted"}`} />
-                                  <span>{opt.label}</span>
-                                </div>
-                                {isSelected && <Check className="w-4 h-4 text-accent-secondary shrink-0" />}
-                              </button>
-                            );
-                          })}
-                        </motion.div>
-                      )}
-                    </AnimatePresence>
-                  </div>
-
-                  {/* Estimated Budget */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-extrabold uppercase text-text-muted">Estimated Budget</label>
-                    <textarea 
-                      required
-                      rows={2}
-                      value={form.budget}
-                      onChange={(e) => setForm({ ...form, budget: e.target.value })}
-                      placeholder="e.g., $10,000 - $15,000, or flexible details..."
-                      className="w-full px-4 py-3 rounded-xl border border-card-border bg-foreground/3 dark:bg-white/3 text-xs sm:text-sm font-semibold text-foreground focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
-                    />
-                  </div>
-
-                  {/* Message */}
-                  <div className="space-y-2">
-                    <label className="text-xs font-extrabold uppercase text-text-muted">Message Details</label>
-                    <textarea 
-                      required
-                      rows={4}
-                      value={form.message}
-                      onChange={(e) => setForm({ ...form, message: e.target.value })}
-                      placeholder="Outline details on features, integrations, timeline..."
-                      className="w-full px-4 py-3 rounded-xl border border-card-border bg-foreground/3 dark:bg-white/3 text-xs sm:text-sm font-semibold text-foreground focus:outline-none focus:border-accent-primary focus:ring-1 focus:ring-accent-primary"
-                    />
-                  </div>
-
-                  {/* Error Message */}
-                  {error && (
-                    <div className="px-4 py-3 rounded-xl border border-red-500/30 bg-red-500/10 text-xs font-semibold text-red-400">
-                      ⚠️ {error}
-                    </div>
-                  )}
-
-                  {/* Buttons */}
-                  <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                    <button
-                      type="submit"
-                      disabled={loading}
-                      className="flex-1 py-4 bg-gradient-to-r from-accent-primary to-accent-secondary text-white font-semibold rounded-xl flex items-center justify-center gap-2 shadow-lg hover:shadow-accent-primary/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 text-sm"
-                    >
-                      {loading ? (
-                        <span className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <>
-                          <Send className="w-4 h-4" />
-                          Send Inquiry
-                        </>
-                      )}
-                    </button>
-
-                    <a
-                      href="https://meet.google.com/"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="py-4 px-6 border border-card-border glass-panel hover:bg-foreground/5 dark:hover:bg-white/5 font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200 text-sm whitespace-nowrap"
-                    >
-                      <Calendar className="w-4 h-4 text-accent-secondary" />
-                      Schedule Google Meet
-                    </a>
-                  </div>
-                </motion.form>
-              ) : (
-                <motion.div 
-                  key="success-card"
+              {roadmapResult ? (
+                <motion.div
+                  key="roadmap"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  className="py-12 flex flex-col items-center text-center space-y-6"
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white/70 dark:bg-zinc-950/70 p-6 rounded-3xl border border-[#ffcd75] dark:border-[#ffcd75]/30 flex-1 flex flex-col justify-between relative overflow-hidden"
+                  id="dynamic-blueprint-card"
                 >
-                  <div className="w-16 h-16 rounded-full bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-500">
-                    <Check className="w-8 h-8 animate-[bounce_1s_infinite]" />
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-[#ffcd75]/5 rounded-full blur-3xl pointer-events-none" />
+
+                  <div>
+                    <span className="inline-flex items-center gap-1 text-[10px] font-mono text-[#ffcd75] bg-[#ffcd75]/10 border border-[#ffcd75]/20 px-2.5 py-0.5 rounded-full mb-3">
+                      <Sparkles size={11} className="animate-pulse" />
+                      DYNAMIC SCHEMATIC RENDER
+                    </span>
+                    <h5 className="text-lg font-sans font-medium text-zinc-900 dark:text-white mb-1">
+                      Blueprint: {service}
+                    </h5>
+                    <p className="text-[10px] text-zinc-500 dark:text-zinc-400">
+                      Formulated on {new Date().toLocaleDateString()} for allocations: <strong className="text-[#ffcd75]">{budget.trim() ? (budget.trim().startsWith("₹") ? budget.trim() : `₹${budget.trim()}`) : "Flexible / TBD"}</strong>
+                    </p>
+
+                    {/* Vertical timeline steps */}
+                    <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-[1px] before:bg-zinc-200 dark:before:bg-white/10 pl-1.5 mt-6" id="dynamic-roadmap-timeline">
+                      {roadmapResult.generatedRoadmap.map((item: RoadmapStep, i: number) => (
+                        <div key={i} className="relative pl-6 group">
+                          <div className="absolute left-1.5 top-1.5 -translate-x-1/2 w-2.5 h-2.5 rounded-full bg-white dark:bg-zinc-950 border border-[#ffcd75] group-hover:bg-[#ffcd75] transition-colors" />
+                          
+                          <div>
+                            <div className="flex items-center gap-2 mb-0.5">
+                              <span className="text-xs font-sans font-bold text-zinc-900 dark:text-white leading-none">{item.step}</span>
+                              <span className="text-[9px] font-mono text-[#ffcd75] bg-[#ffcd75]/5 px-1.5 py-0.5 rounded border border-[#ffcd75]/10">{item.duration}</span>
+                            </div>
+                            <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans">{item.desc}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                  <h3 className="text-2xl font-black tracking-tight">Inquiry Received!</h3>
-                  <p className="text-xs sm:text-sm text-text-muted max-w-sm leading-relaxed">
-                    Thank you for reaching out. A senior software engineer from Nexera Services
-                    will review your parameters and email you back with a custom blueprint within 24 hours.
-                  </p>
-                  <button
-                    onClick={() => setSubmitted(false)}
-                    className="px-6 py-2.5 border border-card-border rounded-full hover:bg-foreground/5 dark:hover:bg-white/5 text-xs font-bold transition-all duration-200"
-                  >
-                    Send Another Message
-                  </button>
+
+                  <div className="mt-6 pt-4 border-t border-zinc-200 dark:border-white/5 flex items-center justify-between">
+                    <span className="text-[10px] text-zinc-500 font-mono">STATUS: BLUEPRINT_OK</span>
+                    <button
+                      onClick={handleScheduleMeet}
+                      className="text-xs font-mono font-semibold text-[#ffcd75] hover:text-zinc-900 dark:hover:text-white inline-flex items-center gap-1 cursor-pointer transition-colors"
+                    >
+                      Confirm & Schedule
+                      <ChevronRight size={14} />
+                    </button>
+                  </div>
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="static-info"
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.95 }}
+                  className="bg-white/70 dark:bg-zinc-950/70 p-6 rounded-3xl border border-zinc-200 dark:border-white/10 flex-1 flex flex-col justify-between relative overflow-hidden"
+                  id="contact-info-card"
+                >
+                  {/* Particle Orb Canvas */}
+                  <div className="relative z-10 flex flex-col items-center text-center">
+                    <ParticleOrbCanvas />
+                  </div>
+
+                  <div className="relative z-10 space-y-4 mt-2">
+                    <div>
+                      <h5 className="text-[10px] font-mono tracking-wider uppercase text-zinc-400 dark:text-zinc-500 mb-1">
+                        Nexera Ingress Node
+                      </h5>
+                      <h4 className="text-lg font-sans font-medium text-zinc-900 dark:text-white tracking-tight">
+                        Secure & Compliant Architecture
+                      </h4>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div className="flex gap-2.5 items-start">
+                        <ShieldCheck size={14} className="text-[#ffcd75] shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans text-left">
+                          <strong className="text-zinc-800 dark:text-white font-medium">100% Isolated Server Sessions:</strong> All client queries run inside isolated server environments. No API keys are leaked client-side.
+                        </p>
+                      </div>
+
+                      <div className="flex gap-2.5 items-start">
+                        <Clock size={14} className="text-[#ffcd75] shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-zinc-600 dark:text-zinc-400 leading-relaxed font-sans text-left">
+                          <strong className="text-zinc-800 dark:text-white font-medium">SLA-Backed Performance:</strong> Custom APIs yield sub-15ms response latencies, backed by persistent container health diagnostics.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="relative z-10 pt-4 border-t border-zinc-200 dark:border-white/5 text-[11px] font-mono text-zinc-500 flex flex-col gap-1.5">
+                    <div className="flex items-center gap-2">
+                      <Mail size={12} className="text-[#ffcd75] shrink-0" />
+                      <span className="text-zinc-600 dark:text-zinc-400">Email Channel: nexeraser@gmail.com</span>
+                    </div>
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
-
           </div>
-
-          {/* Right: 3D Holographic Canvas Orb details */}
-          <div className="lg:col-span-5 flex flex-col items-center justify-center text-center space-y-6 relative h-[380px] lg:h-auto">
-            {/* Ambient glows behind orb */}
-            <div className="absolute w-64 h-64 rounded-full bg-accent-secondary/5 blur-[80px] pointer-events-none" />
-
-            <div className="relative w-full h-[280px] sm:h-[320px] flex items-center justify-center">
-              <OrbCanvas />
-            </div>
-
-            <div className="max-w-xs space-y-2">
-              <h3 className="font-extrabold text-sm uppercase tracking-widest text-text-muted flex items-center justify-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-accent-secondary animate-pulse" />
-                Network Node Active
-              </h3>
-              <p className="text-[11px] text-text-muted leading-relaxed">
-                Connect and launch. Hover over the particle web to perturb the 3D orbit
-                and sync your coordinates with our core cluster.
-              </p>
-            </div>
-          </div>
-
         </div>
 
       </div>

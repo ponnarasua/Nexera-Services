@@ -1,238 +1,248 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { useTheme } from "@/context/ThemeContext";
-import Image from "next/image";
-import logo from "@/app/logo.png";
-import logoName from "@/app/Name.png";
-import { Sun, Moon, Menu, X, ArrowRight } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { Terminal, Sun, Moon, Monitor, Menu, X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-
-const menuItems = [
-  { label: "Home", href: "#home" },
-  { label: "About", href: "#about" },
-  { label: "Services", href: "#services" },
-  { label: "Solutions", href: "#solutions" },
-  { label: "Portfolio", href: "#portfolio" },
-  { label: "Process", href: "#process" },
-  { label: "Contact", href: "#contact" },
-];
+import { useTheme, Theme } from "@/context/ThemeContext";
+import Image from "next/image";
+import logoImg from "@/app/logo.png";
+import nameImg from "@/app/Name.png";
 
 export default function Navbar() {
-  const { theme, toggleTheme } = useTheme();
-  const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
-  const [activeSection, setActiveSection] = useState("home");
+  const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState("hero");
+  const [themeDropdownOpen, setThemeDropdownOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+  }, []);
+  
+  const { theme, setTheme } = useTheme();
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close theme dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setThemeDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  // Scrollspy and Header Scroll Styling
+  useEffect(() => {
     const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
+      setScrolled(window.scrollY > 40);
       
-      // Detect if page is scrolled to the bottom to force active section to contact
-      const isAtBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 80;
-      if (isAtBottom) {
-        setActiveSection("contact");
+      const sections = ["hero", "about", "services", "solutions", "why-choose-us", "timeline", "faqs", "contact"];
+      const scrollPos = window.scrollY + 200;
+
+      for (const section of sections) {
+        const el = document.getElementById(section);
+        if (el) {
+          const top = el.offsetTop;
+          const height = el.offsetHeight;
+          if (scrollPos >= top && scrollPos < top + height) {
+            setActiveSection(section);
+            break;
+          }
+        }
       }
     };
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            setActiveSection(entry.target.id);
-          }
-        });
-      },
-      { threshold: 0.1, rootMargin: "-20% 0px -30% 0px" }
-    );
-
-    const sections = ["home", "about", "services", "solutions", "portfolio", "process", "contact"];
-    sections.forEach((id) => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, []);
+  const scrollToSection = (id: string) => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth" });
+      setMobileMenuOpen(false);
+    }
+  };
 
   return (
     <>
-      {/* Floating Glass Navbar Wrapper */}
-      <header className="fixed top-4 left-0 right-0 z-50 px-6 md:px-12 lg:px-20 w-full pointer-events-none flex justify-center">
-        <div 
-          className={`w-full px-6 py-3 flex items-center justify-between pointer-events-auto rounded-2xl acrylic-navbar ${
-            scrolled 
-              ? "acrylic-navbar-scrolled bg-white/50 dark:bg-black/50" 
-              : "bg-white/30 dark:bg-black/30"
-          }`}
-        >
-          {/* Logo */}
-          <a href="#home" className="flex items-center gap-2 group">
-            <div className="relative w-8 h-8 flex items-center justify-center overflow-hidden">
-              <Image 
-                src={logo} 
-                alt="Nexera Logo" 
-                width={32} 
-                height={32} 
-                className="object-contain" 
-              />
-            </div>
-            <div className="relative h-6 w-24 flex items-center overflow-hidden">
-              <Image 
-                src={logoName} 
-                alt="Nexera" 
-                className="object-contain h-full w-auto" 
-              />
-            </div>
-          </a>
+      <header className={`fixed top-6 left-1/2 -translate-x-1/2 w-[95%] max-w-5xl rounded-full border transition-all duration-500 z-50 ${
+        scrolled 
+          ? "border-zinc-200/80 dark:border-white/10 bg-white/80 dark:bg-zinc-950/70 backdrop-blur-xl py-3 px-6 shadow-sm dark:shadow-[0_15px_35px_rgba(0,0,0,0.6)]" 
+          : "border-zinc-200/30 dark:border-white/5 bg-white/30 dark:bg-zinc-950/30 backdrop-blur-md py-4 px-6"
+      }`} id="site-header">
+        <div className="w-full flex items-center justify-between">
+          
+          {/* Logo Brand */}
+          <div 
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            className="flex items-center gap-2 cursor-pointer select-none group"
+            id="header-logo-container"
+          >
+            <Image src={logoImg} alt="Nexera Logo" className="h-8 w-8 object-contain group-hover:scale-105 transition-transform duration-300" />
+            <Image src={nameImg} alt="NEXERA" className="h-4 w-auto object-contain invert dark:invert-0 transition-all duration-300" />
+          </div>
 
-          {/* Desktop Nav Items */}
-          <nav className="hidden lg:flex items-center gap-1">
-            {menuItems.map((item, idx) => {
-              const isActive = activeSection === item.href.replace("#", "");
+          {/* Desktop Navigation Links */}
+          <nav className="hidden md:flex items-center gap-1 bg-zinc-100/50 dark:bg-white/[0.02] border border-zinc-200/80 dark:border-white/5 rounded-full px-1.5 py-1" id="desktop-nav">
+            {[
+              { id: "about", label: "About" },
+              { id: "services", label: "Services" },
+              { id: "solutions", label: "Solutions" },
+              { id: "why-choose-us", label: "Why Nexera" },
+              { id: "timeline", label: "Process" },
+              { id: "faqs", label: "FAQ" },
+              { id: "contact", label: "Connect" }
+            ].map((link) => {
+              const isActive = activeSection === link.id;
               return (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => setActiveSection(item.href.replace("#", ""))}
-                  onMouseEnter={() => setHoveredIdx(idx)}
-                  onMouseLeave={() => setHoveredIdx(null)}
-                  className={`relative px-4 py-2 text-sm font-medium transition-colors duration-200 rounded-full ${
-                    isActive ? "text-accent-primary dark:text-accent-secondary" : "text-foreground/80 hover:text-foreground"
+                <button
+                  key={link.id}
+                  onClick={() => scrollToSection(link.id)}
+                  className={`text-[10px] sm:text-[11px] font-mono font-medium px-4 py-1.5 rounded-full transition-all cursor-pointer relative ${
+                    isActive 
+                      ? "text-zinc-900 dark:text-white bg-zinc-200/60 dark:bg-white/10 shadow-sm" 
+                      : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white"
                   }`}
                 >
-                  {/* Sliding Hover highlight */}
-                  {hoveredIdx === idx && (
-                    <motion.span
-                      layoutId="hover-indicator"
-                      className="absolute inset-0 bg-foreground/5 dark:bg-white/5 rounded-full -z-10"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                    />
-                  )}
-                  {/* Active Indicator dot */}
-                  {isActive && (
-                    <motion.span
-                      layoutId="active-dot"
-                      className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-1 h-1 rounded-full bg-accent-primary dark:bg-accent-secondary"
-                      transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                    />
-                  )}
-                  {item.label}
-                </a>
+                  <span>{link.label}</span>
+                </button>
               );
             })}
           </nav>
 
-          {/* Action Area */}
-          <div className="hidden lg:flex items-center gap-4">
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full border border-card-border hover:bg-foreground/5 dark:hover:bg-white/5 text-foreground transition-all duration-200"
-              aria-label="Toggle theme"
-            >
-              {theme === "light" ? (
-                <Moon className="w-4 h-4 text-slate-800" />
-              ) : (
-                <Sun className="w-4 h-4 text-yellow-400 animate-spin-slow" />
-              )}
-            </button>
+          {/* Theme Selector & CTA button */}
+          <div className="hidden md:flex items-center gap-3">
+            {/* Theme Selector Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <button
+                onClick={() => setThemeDropdownOpen(!themeDropdownOpen)}
+                className="p-2 rounded-full border border-zinc-200 dark:border-white/10 bg-white/50 dark:bg-white/[0.02] text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-all cursor-pointer flex items-center justify-center shadow-sm"
+                title={`Theme: ${theme}`}
+                suppressHydrationWarning
+              >
+                {!mounted ? (
+                  <span className="w-3.5 h-3.5 block" />
+                ) : (
+                  <>
+                    {theme === "light" && <Sun size={14} />}
+                    {theme === "dark" && <Moon size={14} />}
+                    {theme === "system" && <Monitor size={14} />}
+                  </>
+                )}
+              </button>
+              
+              <AnimatePresence>
+                {themeDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    transition={{ duration: 0.15 }}
+                    className="absolute right-0 mt-2 w-32 rounded-2xl border border-zinc-200/80 dark:border-white/10 bg-white dark:bg-zinc-950 p-1.5 shadow-xl z-50 font-mono text-[11px]"
+                  >
+                    {[
+                      { value: "light", label: "Light", icon: Sun },
+                      { value: "dark", label: "Dark", icon: Moon },
+                      { value: "system", label: "System", icon: Monitor },
+                    ].map((item) => {
+                      const Icon = item.icon;
+                      const isSelected = theme === item.value;
+                      return (
+                        <button
+                          key={item.value}
+                          onClick={() => {
+                            setTheme(item.value as Theme);
+                            setThemeDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center gap-2 px-2.5 py-1.5 rounded-xl text-left cursor-pointer transition-colors ${
+                            isSelected 
+                              ? "bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white font-bold" 
+                              : "text-zinc-500 dark:text-zinc-400 hover:bg-zinc-50 dark:hover:bg-white/5 hover:text-zinc-900 dark:hover:text-white"
+                          }`}
+                        >
+                          <Icon size={12} />
+                          <span>{item.label}</span>
+                        </button>
+                      );
+                    })}
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
-            <a
-              href="#contact"
-              className="px-4 py-2 text-sm font-medium border border-card-border hover:bg-foreground/5 dark:hover:bg-white/5 rounded-full transition-colors duration-200"
-            >
-              Schedule Meeting
-            </a>
-            
-            <a
-              href="#contact"
-              className="px-5 py-2 text-sm font-medium text-white bg-gradient-to-r from-accent-primary to-accent-secondary hover:opacity-95 rounded-full transition-all duration-200 flex items-center gap-1 shadow-lg hover:shadow-accent-primary/20"
-            >
-              Get Started
-              <ArrowRight className="w-4 h-4" />
-            </a>
           </div>
 
-          {/* Mobile Actions (Menu Button & Theme Toggle) */}
-          <div className="flex items-center gap-3 lg:hidden">
-            {/* Theme Toggle */}
+          {/* Mobile hamburger menu and theme trigger */}
+          <div className="flex md:hidden items-center gap-2">
             <button
-              onClick={toggleTheme}
-              className="p-2 rounded-full border border-card-border text-foreground hover:bg-foreground/5 dark:hover:bg-white/5 transition-all duration-200"
-              aria-label="Toggle theme"
+              onClick={() => {
+                const themes: ("light" | "dark" | "system")[] = ["light", "dark", "system"];
+                const nextIndex = (themes.indexOf(theme) + 1) % themes.length;
+                setTheme(themes[nextIndex]);
+              }}
+              className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-white/10 rounded-lg bg-white/5 cursor-pointer"
+              title={`Cycle theme: Current ${theme}`}
+              suppressHydrationWarning
             >
-              {theme === "light" ? (
-                <Moon className="w-4 h-4 text-slate-800" />
+              {!mounted ? (
+                <span className="w-[15px] h-[15px] block" />
               ) : (
-                <Sun className="w-4 h-4 text-yellow-400 animate-spin-slow" />
+                <>
+                  {theme === "light" && <Sun size={15} />}
+                  {theme === "dark" && <Moon size={15} />}
+                  {theme === "system" && <Monitor size={15} />}
+                </>
               )}
             </button>
-
-            {/* Hamburger */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-full border border-card-border text-foreground hover:bg-foreground/5 dark:hover:bg-white/5 transition-all duration-200"
-              aria-label="Toggle mobile menu"
+              className="p-1.5 text-zinc-500 dark:text-zinc-400 hover:text-zinc-950 dark:hover:text-white border border-zinc-200 dark:border-white/10 rounded-lg bg-white/5 cursor-pointer"
+              id="mobile-menu-toggle-btn"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {mobileMenuOpen ? <X size={16} /> : <Menu size={16} />}
             </button>
           </div>
+
         </div>
       </header>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-background/95 backdrop-blur-xl lg:hidden flex flex-col pt-24 px-8 pb-10"
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed top-24 left-1/2 -translate-x-1/2 w-[90%] max-w-sm z-40 bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl border border-zinc-200 dark:border-white/10 rounded-3xl p-6 shadow-2xl md:hidden"
+            id="mobile-nav-drawer"
           >
-            <div className="flex flex-col gap-4 text-lg font-semibold mb-8">
-              {menuItems.map((item) => (
-                <a
-                  key={item.label}
-                  href={item.href}
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    setActiveSection(item.href.replace("#", ""));
-                  }}
-                  className="py-2 border-b border-card-border text-foreground/80 hover:text-foreground flex items-center justify-between"
-                >
-                  {item.label}
-                  <ArrowRight className="w-4 h-4 opacity-50" />
-                </a>
-              ))}
+            <div className="space-y-1.5">
+              {[
+                { id: "about", label: "About Us" },
+                { id: "services", label: "Core Services" },
+                { id: "solutions", label: "Audience Solutions" },
+                { id: "why-choose-us", label: "Sovereign Privileges" },
+                { id: "timeline", label: "Deployment Timeline" },
+                { id: "faqs", label: "SLA & Security FAQs" },
+                { id: "contact", label: "Interactive Blueprint" }
+              ].map((link) => {
+                const isActive = activeSection === link.id;
+                return (
+                  <button
+                    key={link.id}
+                    onClick={() => scrollToSection(link.id)}
+                    className="w-full text-left text-xs font-mono py-2.5 border-b border-zinc-100 dark:border-white/5 cursor-pointer flex items-center justify-between group transition-colors"
+                  >
+                    <span className={isActive ? "text-[#ffcd75] font-bold" : "text-zinc-600 dark:text-zinc-300 group-hover:text-[#ffcd75]"}>
+                      {link.label}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="mt-auto flex flex-col gap-4">
-              <a
-                href="#contact"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3 text-center rounded-xl border border-card-border font-medium text-foreground hover:bg-foreground/5 dark:hover:bg-white/5 transition-all"
-              >
-                Schedule Meeting
-              </a>
-              <a
-                href="#contact"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full py-3 text-center rounded-xl bg-gradient-to-r from-accent-primary to-accent-secondary text-white font-medium flex items-center justify-center gap-2 shadow-lg"
-              >
-                Get Started
-                <ArrowRight className="w-4 h-4" />
-              </a>
-            </div>
           </motion.div>
         )}
       </AnimatePresence>

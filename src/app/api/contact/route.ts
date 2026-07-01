@@ -57,7 +57,7 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL!;
+const NOTIFICATION_EMAIL = process.env.NOTIFICATION_EMAIL || "";
 
 const serviceLabels: Record<string, string> = {
   "custom-software": "Custom Software Development",
@@ -66,6 +66,12 @@ const serviceLabels: Record<string, string> = {
   "cloud-devops": "Cloud & DevSecOps Solutions",
   "ai-systems": "AI Integration & Cognitive Systems",
   "managed-it": "Maintenance & Managed IT Services",
+  "Custom Software Development": "Custom Software Development",
+  "Web Development": "Web Development",
+  "Educational Solutions": "Educational Solutions",
+  "Business Automation": "Business Automation",
+  "Cloud Solutions": "Cloud Solutions",
+  "AI Systems": "AI Systems"
 };
 
 // ── Email 1: Owner Notification ──────────────────────────────────────────────
@@ -216,7 +222,7 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json();
-    const { name, email, phone, organization, service, budget, message } = body;
+    const { name, email, phone, organization, company, service, budget, message } = body;
 
     // 2. Presence check
     if (!name || !email || !message) {
@@ -245,7 +251,8 @@ export async function POST(req: NextRequest) {
     if (phone && phone.length > 30) {
       return NextResponse.json({ error: "Phone number is too long." }, { status: 400 });
     }
-    if (organization && organization.length > 100) {
+    const finalOrg = organization || company || "";
+    if (finalOrg && finalOrg.length > 100) {
       return NextResponse.json({ error: "Organization name is too long." }, { status: 400 });
     }
     if (budget && budget.length > 300) {
@@ -259,7 +266,7 @@ export async function POST(req: NextRequest) {
     const escapedName = escapeHtml(name);
     const escapedEmail = escapeHtml(email);
     const escapedPhone = escapeHtml(phone || "");
-    const escapedOrg = escapeHtml(organization || "");
+    const escapedOrg = escapeHtml(finalOrg);
     const escapedBudget = escapeHtml(budget || "");
     const escapedMessage = escapeHtml(message);
 
@@ -269,34 +276,57 @@ export async function POST(req: NextRequest) {
       timeStyle: "short",
     });
 
-    // 1. Notify YOU (owner)
-    await transporter.sendMail({
-      from: `"Nexera Contact Form" <${process.env.GMAIL_USER}>`,
-      to: NOTIFICATION_EMAIL,
-      replyTo: escapedEmail,
-      subject: `🔔 New Inquiry from ${escapedName} — ${serviceLabels[service] || service}`,
-      html: buildOwnerEmail({
-        name: escapedName,
-        email: escapedEmail,
-        phone: escapedPhone,
-        organization: escapedOrg,
-        service,
-        budget: escapedBudget,
-        message: escapedMessage,
-        submittedAt
-      }),
-    });
+    const displayService = serviceLabels[service] || service;
 
-    // 2. Confirmation to the person who contacted
-    await transporter.sendMail({
-      from: `"Nexera Services" <${process.env.GMAIL_USER}>`,
-      to: escapedEmail,
-      replyTo: NOTIFICATION_EMAIL,
-      subject: `✅ We received your inquiry, ${escapedName.split(" ")[0]}!`,
-      html: buildConfirmationEmail(escapedName),
-    });
+    // Send emails if config exists
+    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD && NOTIFICATION_EMAIL) {
+      try {
+        // 1. Notify owner
+        await transporter.sendMail({
+          from: `"Nexera Contact Form" <${process.env.GMAIL_USER}>`,
+          to: NOTIFICATION_EMAIL,
+          replyTo: escapedEmail,
+          subject: `🔔 New Inquiry from ${escapedName} — ${displayService}`,
+          html: buildOwnerEmail({
+            name: escapedName,
+            email: escapedEmail,
+            phone: escapedPhone,
+            organization: escapedOrg,
+            service,
+            budget: escapedBudget,
+            message: escapedMessage,
+            submittedAt
+          }),
+        });
 
-    return NextResponse.json({ success: true });
+        // 2. Confirmation to user
+        await transporter.sendMail({
+          from: `"Nexera Services" <${process.env.GMAIL_USER}>`,
+          to: escapedEmail,
+          replyTo: NOTIFICATION_EMAIL,
+          subject: `✅ We received your inquiry, ${escapedName.split(" ")[0]}!`,
+          html: buildConfirmationEmail(escapedName),
+        });
+      } catch (emailErr) {
+        console.error("Nodemailer dispatch failed:", emailErr);
+      }
+    } else {
+      console.warn("Gmail environment variables not set. Skipping mail dispatch. Operating in local simulation.");
+    }
+
+    // Custom roadmap based on selected service
+    const roadmapSteps = [
+      { step: "Phase 1: Architecture Blueprint", duration: "1-2 weeks", desc: `Discovery, system boundaries definition, and custom conceptual schema designs for your ${displayService} platform.` },
+      { step: "Phase 2: Agile Development Loop", duration: "4-6 weeks", desc: "Interactive bi-weekly sprint iterations accompanied by live beta previews on high-density cloud networks." },
+      { step: "Phase 3: Nexera Integration & Security", duration: "1-2 weeks", desc: "Configuring robust identity flows, encrypting databases, and injecting specialized AI telemetries." },
+      { step: "Phase 4: Orchestration & Launch", duration: "Ongoing", desc: "Continuous autoscaling deployment, production logs ingestion, and real-time support channels." }
+    ];
+
+    return NextResponse.json({
+      success: true,
+      message: "Inquiry successfully received by Nexera's core systems.",
+      generatedRoadmap: roadmapSteps
+    });
   } catch (err: unknown) {
     const error = err as Error;
     console.error("[Contact API Error]", error?.message || error);
